@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from './components/Login';
 import { useAuth0 } from '@auth0/auth0-react';
 import Dashboard from './components/Dashboard';
-import Logout from './components/Logout';
+import Playlist from './pages/Playlist/Playlist';
 
 const App = () => {
   const { isAuthenticated, isLoading } = useAuth0();
@@ -17,6 +17,7 @@ const App = () => {
     <Routes>
       <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} />
       <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/" />} />
+      <Route path="/playlist"  element={isAuthenticated ? <Playlist/> : <Navigate to="/"/>}/>
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
