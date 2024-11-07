@@ -67,22 +67,4 @@ function App() {
   );
 }
 
-
-/* 
-
-    <div>
-      {!isAuth && <button onClick={handleLogin}>Sign in with Google</button>}
-      {isAuth && (
-        <div>
-          <img src={photoURL} alt={`${username}'s profile`} />
-          <h2>Hello, {username}</h2>
-          <h4>Email: {email}</h4>
-
-          <Logout setIsAuth = {setIsAuth} setUserName={setUserName} setEmail={setEmail} setPhotoURL={setPhotoURL}/>
-        </div>
-      )}
-    </div>
-
-*/
-
 export default App;

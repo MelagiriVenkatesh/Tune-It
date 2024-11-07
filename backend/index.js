@@ -21,6 +21,35 @@ const SCOPES = [
 ].join(' ');
 
 
+// Route to fetch YouTube playlists
+app.get('/api/youtube/playlists', async (req, res) => {
+    const access_token = req.cookies.access_token; 
+
+    if (!access_token) {
+        return res.status(401).json({ message: 'Access token is missing. Please log in.' });
+    }
+
+    try {
+        // Fetch the user's playlists from the YouTube API
+        const response = await axios.get('https://www.googleapis.com/youtube/v3/playlists', {
+            headers: {
+                Authorization: `Bearer ${access_token}`, // Authorization header with the access token
+            },
+            params: {
+                part: 'snippet',  // Required to fetch playlist details
+                mine: 'true',     // Ensures it only returns the authenticated user's playlists
+            },
+        });
+
+        const data = await response.data;
+        res.json(data);
+        
+    } catch (error) {
+        console.error('Error fetching YouTube playlists:', error.response ? error.response.data : error.message);
+        res.status(500).json({ message: 'Error fetching YouTube playlists', error: error.message });
+    }
+});
+
 app.get('/logout', (req, res) => {
     // Set cookies with the same name but expired date to immediately remove them
     res.cookie('username', '', { expires: new Date(0), httpOnly: true });
