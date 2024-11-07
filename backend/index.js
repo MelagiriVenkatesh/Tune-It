@@ -22,33 +22,85 @@ const SCOPES = [
 
 
 // Route to fetch YouTube playlists
+// app.get('/api/youtube/playlists', async (req, res) => {
+//     const access_token = req.cookies.access_token; 
+
+//     if (!access_token) {
+//         return res.status(401).json({ message: 'Access token is missing. Please log in.' });
+//     }
+
+//     try {
+//         // Fetch the user's playlists from the YouTube API
+//         const response = await axios.get('https://www.googleapis.com/youtube/v3/playlists', {
+//             headers: {
+//                 Authorization: `Bearer ${access_token}`, // Authorization header with the access token
+//             },
+//             params: {
+//                 part: 'snippet',  // Required to fetch playlist details
+//                 mine: 'true',     // Ensures it only returns the authenticated user's playlists
+//             },
+//         });
+
+//         const data = await response.data;
+//         res.json(data);
+
+//     } catch (error) {
+//         console.error('Error fetching YouTube playlists:', error.response ? error.response.data : error.message);
+//         res.status(500).json({ message: 'Error fetching YouTube playlists', error: error.message });
+//     }
+// });
+
 app.get('/api/youtube/playlists', async (req, res) => {
-    const access_token = req.cookies.access_token; 
+    const access_token = req.cookies.access_token;
 
     if (!access_token) {
-        return res.status(401).json({ message: 'Access token is missing. Please log in.' });
+        return res.status(401).json({ message: 'Not authenticated' });
     }
 
     try {
-        // Fetch the user's playlists from the YouTube API
-        const response = await axios.get('https://www.googleapis.com/youtube/v3/playlists', {
-            headers: {
-                Authorization: `Bearer ${access_token}`, // Authorization header with the access token
-            },
+        // Step 1: Get the playlists
+        const playlistsResponse = await axios.get('https://www.googleapis.com/youtube/v3/playlists', {
             params: {
-                part: 'snippet',  // Required to fetch playlist details
-                mine: 'true',     // Ensures it only returns the authenticated user's playlists
+                part: 'snippet,contentDetails',
+                mine: true,
+            },
+            headers: {
+                Authorization: `Bearer ${access_token}`,
             },
         });
 
-        const data = await response.data;
-        res.json(data);
-        
+        const playlists = playlistsResponse.data.items;
+
+        // Step 2: Fetch videos for each playlist
+        const playlistsWithVideos = await Promise.all(
+            playlists.map(async (playlist) => {
+                const playlistId = playlist.id;
+
+                // Fetch videos for each playlist
+                const videosResponse = await axios.get('https://www.googleapis.com/youtube/v3/playlistItems', {
+                    params: {
+                        part: 'snippet,contentDetails',
+                        playlistId: playlistId,
+                    },
+                    headers: {
+                        Authorization: `Bearer ${access_token}`,
+                    },
+                });
+
+                return {
+                    ...playlist,
+                    videos: videosResponse.data.items,
+                };
+            })
+        );
+
+        res.json({ playlists: playlistsWithVideos });
     } catch (error) {
-        console.error('Error fetching YouTube playlists:', error.response ? error.response.data : error.message);
-        res.status(500).json({ message: 'Error fetching YouTube playlists', error: error.message });
+        console.error('Error fetching playlists or videos:', error.message);
+        res.status(500).json({ message: 'Failed to fetch playlists or videos', error: error.message });
     }
 });
+
 
 app.get('/logout', (req, res) => {
     // Set cookies with the same name but expired date to immediately remove them

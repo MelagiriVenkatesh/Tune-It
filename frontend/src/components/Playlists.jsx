@@ -1,114 +1,66 @@
-// import React, { useEffect, useState } from 'react';
-// import axios from 'axios';
-// import { useNavigate } from 'react-router-dom'
-// import Playlist from './Playlist';
-
-// const Playlists = () => {
-//     const [playlists, setPlaylists] = useState([]);
-//     const [loading, setLoading] = useState(true);
-//     const [error, setError] = useState(null);
-
-//     const navigate = useNavigate();
-//     function handleDashboard() {
-//         navigate('/dashboard');
-//     }
-
-//     useEffect(() => {
-//         const fetchPlaylists = async () => {
-//             try {
-//                 // Make a request to the backend to get the playlists
-//                 const response = await axios.get('http://localhost:5555/api/youtube/playlists', { withCredentials: true });
-
-//                 // Set the playlists data to state
-//                 setPlaylists(response.data.items);
-//                 setLoading(false);
-//             } catch (err) {
-//                 // Handle error if there's any
-//                 console.error('Error fetching playlists:', err);
-//                 setError('Error fetching playlists');
-//                 setLoading(false);
-//             }
-//         };
-
-//         fetchPlaylists();
-//     }, []);  // Empty dependency array ensures this runs once when the component mounts
-
-//     if (loading) {
-//         return <div>Loading playlists...</div>;
-//     }
-
-//     if (error) {
-//         return <div>{error}</div>;
-//     }
-
-//     return (
-//         <div>
-//             <button onClick={() => handleDashboard()}>Go To Dashboard</button>
-//             <h2>Your YouTube Playlists</h2>
-//             <div>
-//                 {playlists.map((playlist) => (
-//                     <Playlist playlist={playlist}/>
-//                 ))}
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default Playlists;
-
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import Playlist from './Playlist';
 
 const Playlists = () => {
     const [playlists, setPlaylists] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    const navigate = useNavigate();
-    function handleDashboard() {
-        navigate('/dashboard');
-    }
+    const [selectedVideoId, setSelectedVideoId] = useState(null); // State to track the selected video ID
 
     useEffect(() => {
         const fetchPlaylists = async () => {
             try {
-                // Make a request to the backend to get the playlists
+                setLoading(true);
                 const response = await axios.get('http://localhost:5555/api/youtube/playlists', { withCredentials: true });
-
-                // Set the playlists data to state
-                setPlaylists(response.data.items);
+                setPlaylists(response.data.playlists);
                 setLoading(false);
             } catch (err) {
-                // Handle error if there's any
-                console.error('Error fetching playlists:', err);
-                setError('Error fetching playlists');
+                setError('Failed to load playlists and videos.');
                 setLoading(false);
             }
         };
 
         fetchPlaylists();
-    }, []);  // Empty dependency array ensures this runs once when the component mounts
+    }, []);
 
-    if (loading) {
-        return <div>Loading playlists...</div>;
-    }
+    const handleVideoClick = (videoId) => {
+        setSelectedVideoId(videoId); // Set the selected video ID to play in the embedded player
+    };
 
-    if (error) {
-        return <div>{error}</div>;
-    }
+    if (loading) return <div>Loading playlists...</div>;
+    if (error) return <div>{error}</div>;
 
     return (
         <div>
-            <button onClick={handleDashboard}>Go To Dashboard</button>
-            <h2>Your YouTube Playlists</h2>
-            <div>
-                {playlists.map((playlist) => (
-                    <Playlist key={playlist.id} playlist={playlist} />
-                ))}
-            </div>
+            <h1>Your YouTube Playlists and Videos</h1>
+            {playlists.map((playlist) => (
+                <div key={playlist.id} className="playlist">
+                    <h2>{"🖥️  "+playlist.snippet.title+"  PLAYLIST🖥️"}</h2>
+                    <div>
+                        {playlist.videos.map((video) => (
+                            <div key={video.id} onClick={() => handleVideoClick(video.contentDetails.videoId)}>
+                                <p><strong>{video.snippet.title}</strong></p>
+                                {/* Clicking this will set the selected video for the iframe */}
+                                <button>Play Video</button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ))}
+
+            {selectedVideoId && (
+                <div className="video-player">
+                    <h3>Now Playing</h3>
+                    <iframe
+                        width="560"
+                        height="315"
+                        src={`https://www.youtube.com/embed/${selectedVideoId}`}
+                        title="YouTube video player"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                    ></iframe>
+                </div>
+            )}
         </div>
     );
 };
