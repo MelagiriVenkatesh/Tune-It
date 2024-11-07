@@ -1,0 +1,21 @@
+/* In your CSS or styled-components file */
+.video-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.video-item p {
+    margin: 0;
+}
+
+.video-item button {
+    padding: 5px 10px;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.video-item button:hover {
+    background-color: #cc0000;
+}

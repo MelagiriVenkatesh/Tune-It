@@ -62,6 +62,7 @@ function App() {
         <Route path="/" element={isAuth ? <Navigate to="/dashboard"/> : <Login setIsAuth = {setIsAuth} setUserName={setUserName} setEmail={setEmail} setPhotoURL={setPhotoURL}/>}/>
         <Route path="/dashboard" element={isAuth ? <Dashboard setIsAuth = {setIsAuth} setUserName={setUserName} setEmail={setEmail} setPhotoURL={setPhotoURL} username={username} email={email} photoURL={photoURL}/> : <Navigate to="/"/>}/>
         <Route path="/playlists" element={isAuth ? <Playlists/> : <Navigate to="/"/>}/>
+        <Route path="*" element={<Navigate to="/"/>}/>
       </Routes>
     </BrowserRouter>
   );

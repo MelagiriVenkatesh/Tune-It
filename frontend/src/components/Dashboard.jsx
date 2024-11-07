@@ -18,7 +18,7 @@ const Dashboard = ({setIsAuth, setUserName, setEmail, setPhotoURL, username, pho
 
     <Logout setIsAuth = {setIsAuth} setUserName={setUserName} setEmail={setEmail} setPhotoURL={setPhotoURL}/>
     <br/><br/>
-    <button onClick = {() => {handlePlaylists()}}>Go To Playlists</button>
+    <button onClick = {() => {handlePlaylists()}}>Go To Playlists{"   ➡"}</button>
   </div>
   )
 }

@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import './Playlists.css';
+import { useNavigate } from 'react-router-dom';
 
 const Playlists = () => {
     const [playlists, setPlaylists] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedVideoId, setSelectedVideoId] = useState(null); // State to track the selected video ID
+    const videoPlayerRef = React.useRef(null); // Reference to the video player iframe
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchPlaylists = async () => {
@@ -23,8 +27,16 @@ const Playlists = () => {
         fetchPlaylists();
     }, []);
 
+    const handleDashboard = () => {
+        navigate('/dashboard');
+    }
+
     const handleVideoClick = (videoId) => {
         setSelectedVideoId(videoId); // Set the selected video ID to play in the embedded player
+        // Scroll the iframe into view when a video is selected
+        if (videoPlayerRef.current) {
+            videoPlayerRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
     };
 
     if (loading) return <div>Loading playlists...</div>;
@@ -32,16 +44,18 @@ const Playlists = () => {
 
     return (
         <div>
+            <button onClick={() => handleDashboard()}>{"⬅ "}Go To Dashboard</button>
             <h1>Your YouTube Playlists and Videos</h1>
             {playlists.map((playlist) => (
                 <div key={playlist.id} className="playlist">
-                    <h2>{"🖥️  "+playlist.snippet.title+"  PLAYLIST🖥️"}</h2>
+                    <h2>{"🖥️  " + playlist.snippet.title + "  PLAYLIST  🖥️"}</h2>
                     <div>
                         {playlist.videos.map((video) => (
                             <div key={video.id} onClick={() => handleVideoClick(video.contentDetails.videoId)}>
-                                <p><strong>{video.snippet.title}</strong></p>
-                                {/* Clicking this will set the selected video for the iframe */}
-                                <button>Play Video</button>
+                                <div className="video-item">
+                                    <button>▶</button>
+                                    <p><strong>{video.snippet.title}</strong></p>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -49,16 +63,17 @@ const Playlists = () => {
             ))}
 
             {selectedVideoId && (
-                <div className="video-player">
+                <div className="video-player" ref={videoPlayerRef}>
                     <h3>Now Playing</h3>
                     <iframe
                         width="560"
                         height="315"
-                        src={`https://www.youtube.com/embed/${selectedVideoId}`}
+                        src={`https://www.youtube.com/embed/${selectedVideoId}?modestbranding=1&showinfo=0&controls=0&rel=0&fs=0&cc_load_policy=0`}
                         title="YouTube video player"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
                     ></iframe>
+
                 </div>
             )}
         </div>

@@ -76,20 +76,32 @@ app.get('/api/youtube/playlists', async (req, res) => {
             playlists.map(async (playlist) => {
                 const playlistId = playlist.id;
 
-                // Fetch videos for each playlist
-                const videosResponse = await axios.get('https://www.googleapis.com/youtube/v3/playlistItems', {
-                    params: {
-                        part: 'snippet,contentDetails',
-                        playlistId: playlistId,
-                    },
-                    headers: {
-                        Authorization: `Bearer ${access_token}`,
-                    },
-                });
+                let videos = [];
+                let nextPageToken = null;
+
+                // Fetch videos for each playlist, handling pagination
+                do {
+                    const videosResponse = await axios.get('https://www.googleapis.com/youtube/v3/playlistItems', {
+                        params: {
+                            part: 'snippet,contentDetails',
+                            playlistId: playlistId,
+                            pageToken: nextPageToken, // Pagination token for next page
+                        },
+                        headers: {
+                            Authorization: `Bearer ${access_token}`,
+                        },
+                    });
+
+                    // Add the videos from the current page
+                    videos = videos.concat(videosResponse.data.items);
+
+                    // Get the nextPageToken if available, for the next request
+                    nextPageToken = videosResponse.data.nextPageToken;
+                } while (nextPageToken); // Keep fetching until there are no more pages
 
                 return {
                     ...playlist,
-                    videos: videosResponse.data.items,
+                    videos,
                 };
             })
         );
