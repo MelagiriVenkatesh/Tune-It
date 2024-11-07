@@ -20,6 +20,14 @@ const SCOPES = [
     'https://www.googleapis.com/auth/youtube.readonly',
 ].join(' ');
 
+app.get('/isAuth', (req, res) => {
+    const refresh_token = req.cookies.refresh_token;
+    if(!refresh_token)
+        res.json({"success": false});
+    else    
+        res.json({"success": true});
+})
+
 app.get('/userDetails', (req, res) => {
     const refresh_token = req.cookies.refresh_token;
 

@@ -1,34 +1,43 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import axios from 'axios'
 
 function App() {
-  const [count, setCount] = useState(0)
+  
+  const [username, setUserName] = useState('');
+  const [email, setEmail] = useState('');
+  const [photoURL, setPhotoURL] = useState('');
+  const [isAuth, setIsAuth] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const response = await axios.get(`http://localhost:5555/isAuth`, {
+        withCredentials: true,
+      });
+      const flag = await response.data;
+      setIsAuth((prev) => flag.success);
+    })();
+  }, []);
+
+  async function handleLogin() {
+    const response = await axios.get(`http://localhost:5555/userDetails`, {
+      withCredentials: true,
+    });
+    const data = await response.data;
+
+    setUserName((prev) => data.username);
+    setEmail((prev) => data.email);
+    setPhotoURL((prev) => data.photoURL);
+    setIsAuth(true);
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div>
+      {!isAuth && <button onClick = {async () => await handleLogin()}>Sign in with Google</button>}
+      {isAuth  && <h2>Hello, {username}</h2>}
+    </div>
   )
 }
 
